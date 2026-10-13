@@ -1,0 +1,650 @@
+openapi: 3.1.0
+info:
+  title: Vaultforge API
+  version: 1.0.0
+  description: |
+    REST API for Vaultforge — personal gaming vault, discovery, achievements, and leaderboard.
+    Base path `/api/v1`. Session auth via Auth.js httpOnly cookie.
+  contact:
+    name: Vaultforge
+servers:
+  - url: /api/v1
+    description: Application API (same origin)
+
+tags:
+  - name: Games
+  - name: Library
+  - name: Users
+  - name: Achievements
+  - name: Feed
+  - name: Leaderboard
+  - name: Admin
+
+paths:
+  /games:
+    get:
+      tags: [Games]
+      summary: List cached / catalog games
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PageSize"
+        - name: genre
+          in: query
+          schema: { type: string }
+        - name: platform
+          in: query
+          schema: { type: string }
+        - name: sort
+          in: query
+          schema:
+            type: string
+            enum: [title, releaseDate, rating, createdAt]
+        - name: order
+          in: query
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+      responses:
+        "200":
+          description: Paginated games
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GameListResponse"
+
+  /games/search:
+    get:
+      tags: [Games]
+      summary: Search games (catalog + cache)
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema: { type: string, minLength: 1 }
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PageSize"
+      responses:
+        "200":
+          description: Search results
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GameListResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+
+  /games/{slug}:
+    get:
+      tags: [Games]
+      summary: Game detail by slug
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Game detail
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: "#/components/schemas/GameDetail"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /library:
+    get:
+      tags: [Library]
+      summary: Current user library
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - name: status
+          in: query
+          schema:
+            $ref: "#/components/schemas/LibraryStatus"
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PageSize"
+      responses:
+        "200":
+          description: Library entries
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LibraryListResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+    post:
+      tags: [Library]
+      summary: Add game to library
+      security: [{ sessionCookie: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LibraryCreateInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/LibraryEntry"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "409":
+          $ref: "#/components/responses/Conflict"
+
+  /library/{id}:
+    patch:
+      tags: [Library]
+      summary: Update library entry (owner only)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LibraryUpdateInput"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/LibraryEntry"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    delete:
+      tags: [Library]
+      summary: Remove library entry (owner only)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "204":
+          description: Deleted
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /users/{username}:
+    get:
+      tags: [Users]
+      summary: Public profile by username
+      parameters:
+        - name: username
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Profile
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/PublicProfile"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /users/{username}/stats:
+    get:
+      tags: [Users]
+      summary: Public gaming stats
+      parameters:
+        - name: username
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Stats
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/UserStats"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /me/profile:
+    patch:
+      tags: [Users]
+      summary: Update own profile
+      security: [{ sessionCookie: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProfileUpdateInput"
+      responses:
+        "200":
+          description: Updated profile
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/PublicProfile"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /achievements:
+    get:
+      tags: [Achievements]
+      summary: List platform achievements
+      responses:
+        "200":
+          description: Achievements catalog
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Achievement"
+
+  /me/achievements:
+    get:
+      tags: [Achievements]
+      summary: Current user achievement progress
+      security: [{ sessionCookie: [] }]
+      responses:
+        "200":
+          description: User achievements
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/UserAchievement"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /feed:
+    get:
+      tags: [Feed]
+      summary: Activity feed for current user (global recent in v1)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PageSize"
+      responses:
+        "200":
+          description: Activities
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ActivityListResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /leaderboard:
+    get:
+      tags: [Leaderboard]
+      summary: XP leaderboard
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PageSize"
+      responses:
+        "200":
+          description: Ranked profiles
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LeaderboardResponse"
+
+  /admin/users:
+    get:
+      tags: [Admin]
+      summary: List users
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PageSize"
+      responses:
+        "200":
+          description: Users
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+  /admin/achievements:
+    get:
+      tags: [Admin]
+      summary: Admin list achievements
+      security: [{ sessionCookie: [] }]
+      responses:
+        "200":
+          description: Achievements
+        "403":
+          $ref: "#/components/responses/Forbidden"
+    post:
+      tags: [Admin]
+      summary: Create achievement
+      security: [{ sessionCookie: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AchievementCreateInput"
+      responses:
+        "201":
+          description: Created
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+  /admin/stats:
+    get:
+      tags: [Admin]
+      summary: System statistics
+      security: [{ sessionCookie: [] }]
+      responses:
+        "200":
+          description: Counts and aggregates
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+components:
+  securitySchemes:
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: authjs.session-token
+      description: Auth.js JWT session cookie (name may include __Secure- prefix in production)
+
+  parameters:
+    Page:
+      name: page
+      in: query
+      schema: { type: integer, minimum: 1, default: 1 }
+    PageSize:
+      name: pageSize
+      in: query
+      schema: { type: integer, minimum: 1, maximum: 50, default: 20 }
+    Id:
+      name: id
+      in: path
+      required: true
+      schema: { type: string }
+
+  responses:
+    BadRequest:
+      description: Validation error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorEnvelope"
+    Unauthorized:
+      description: Not authenticated
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorEnvelope"
+    Forbidden:
+      description: Not authorized
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorEnvelope"
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorEnvelope"
+    Conflict:
+      description: Conflict (e.g. duplicate library entry)
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorEnvelope"
+    TooManyRequests:
+      description: Rate limited
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorEnvelope"
+
+  schemas:
+    ErrorEnvelope:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code: { type: string }
+            message: { type: string }
+            details: {}
+
+    PaginationMeta:
+      type: object
+      properties:
+        page: { type: integer }
+        pageSize: { type: integer }
+        total: { type: integer }
+
+    LibraryStatus:
+      type: string
+      enum: [PLAYING, COMPLETED, BACKLOG, WISHLIST, PLAYED]
+
+    GameSummary:
+      type: object
+      properties:
+        id: { type: string }
+        slug: { type: string }
+        title: { type: string }
+        coverUrl: { type: string, nullable: true }
+        releaseDate: { type: string, format: date, nullable: true }
+        rating: { type: number, nullable: true }
+
+    GameDetail:
+      allOf:
+        - $ref: "#/components/schemas/GameSummary"
+        - type: object
+          properties:
+            description: { type: string, nullable: true }
+            genres:
+              type: array
+              items: { type: string }
+            platforms:
+              type: array
+              items: { type: string }
+            screenshots:
+              type: array
+              items: { type: string }
+
+    GameListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/GameSummary"
+        meta:
+          $ref: "#/components/schemas/PaginationMeta"
+
+    LibraryEntry:
+      type: object
+      properties:
+        id: { type: string }
+        status:
+          $ref: "#/components/schemas/LibraryStatus"
+        rating: { type: integer, nullable: true, minimum: 1, maximum: 10 }
+        notes: { type: string, nullable: true }
+        favorited: { type: boolean }
+        statusChangedAt: { type: string, format: date-time }
+        game:
+          $ref: "#/components/schemas/GameSummary"
+
+    LibraryListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/LibraryEntry"
+        meta:
+          $ref: "#/components/schemas/PaginationMeta"
+
+    LibraryCreateInput:
+      type: object
+      required: [gameId, status]
+      properties:
+        gameId: { type: string }
+        status:
+          $ref: "#/components/schemas/LibraryStatus"
+        rating: { type: integer, minimum: 1, maximum: 10 }
+        notes: { type: string, maxLength: 2000 }
+        favorited: { type: boolean }
+
+    LibraryUpdateInput:
+      type: object
+      properties:
+        status:
+          $ref: "#/components/schemas/LibraryStatus"
+        rating: { type: integer, nullable: true, minimum: 1, maximum: 10 }
+        notes: { type: string, nullable: true, maxLength: 2000 }
+        favorited: { type: boolean }
+
+    PublicProfile:
+      type: object
+      properties:
+        username: { type: string }
+        displayName: { type: string, nullable: true }
+        bio: { type: string, nullable: true }
+        avatarUrl: { type: string, nullable: true }
+        xp: { type: integer }
+        isPublic: { type: boolean }
+
+    ProfileUpdateInput:
+      type: object
+      properties:
+        displayName: { type: string, maxLength: 80 }
+        bio: { type: string, maxLength: 500 }
+        avatarUrl: { type: string, format: uri }
+        isPublic: { type: boolean }
+
+    UserStats:
+      type: object
+      properties:
+        playing: { type: integer }
+        completed: { type: integer }
+        backlog: { type: integer }
+        wishlist: { type: integer }
+        played: { type: integer }
+        achievementsUnlocked: { type: integer }
+        xp: { type: integer }
+
+    Achievement:
+      type: object
+      properties:
+        id: { type: string }
+        code: { type: string }
+        title: { type: string }
+        description: { type: string }
+        xpReward: { type: integer }
+        icon: { type: string, nullable: true }
+
+    AchievementCreateInput:
+      type: object
+      required: [code, title, description, xpReward, criteria]
+      properties:
+        code: { type: string }
+        title: { type: string }
+        description: { type: string }
+        xpReward: { type: integer }
+        icon: { type: string }
+        criteria: { type: object }
+
+    UserAchievement:
+      type: object
+      properties:
+        achievement:
+          $ref: "#/components/schemas/Achievement"
+        unlockedAt: { type: string, format: date-time, nullable: true }
+        progress: { type: number }
+
+    Activity:
+      type: object
+      properties:
+        id: { type: string }
+        type: { type: string }
+        metadata: { type: object }
+        createdAt: { type: string, format: date-time }
+        actor:
+          type: object
+          properties:
+            username: { type: string }
+            displayName: { type: string, nullable: true }
+
+    ActivityListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Activity"
+        meta:
+          $ref: "#/components/schemas/PaginationMeta"
+
+    LeaderboardEntry:
+      type: object
+      properties:
+        rank: { type: integer }
+        username: { type: string }
+        displayName: { type: string, nullable: true }
+        avatarUrl: { type: string, nullable: true }
+        xp: { type: integer }
+
+    LeaderboardResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/LeaderboardEntry"
+        meta:
+          $ref: "#/components/schemas/PaginationMeta"
