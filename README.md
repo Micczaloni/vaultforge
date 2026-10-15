@@ -37,7 +37,20 @@ Husky + lint-staged run ESLint and Prettier on staged files before commit.
 
 ### Environment
 
-Copy `.env.example` to `.env.local` and fill values as later phases unlock database, auth, and RAWG.
+Copy `.env.example` to `.env` (local only — never commit secrets).
+
+### Database (Phase 4)
+
+Requires Docker Desktop for local Postgres:
+
+```bash
+docker compose up -d db
+npm run db:migrate
+npm run db:seed
+```
+
+Seeded demo password for all users: `Password123!`  
+Admin: `admin@vaultforge.dev` / username `forgeadmin`
 
 ## Design
 
