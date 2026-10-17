@@ -1,5 +1,10 @@
 import Link from "next/link";
 
+import { SignOutButton } from "@/components/auth/sign-out-button";
+import { requirePageAdmin } from "@/lib/rbac";
+
+export const instant = false;
+
 const adminNav = [
   { href: "/admin", label: "Overview" },
   { href: "/admin/users", label: "Users" },
@@ -7,11 +12,13 @@ const adminNav = [
   { href: "/admin/stats", label: "Stats" },
 ] as const;
 
-export default function AdminLayout({
+export default async function AdminLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  await requirePageAdmin();
+
   return (
     <div className="flex min-h-full flex-1">
       <aside className="border-border bg-surface w-56 shrink-0 border-r">
@@ -31,6 +38,9 @@ export default function AdminLayout({
             </Link>
           ))}
         </nav>
+        <div className="border-border border-t p-3">
+          <SignOutButton />
+        </div>
       </aside>
       <main className="flex-1 p-4 sm:p-6">{children}</main>
     </div>

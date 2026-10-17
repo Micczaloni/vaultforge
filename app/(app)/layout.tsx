@@ -1,5 +1,10 @@
 import Link from "next/link";
 
+import { SignOutButton } from "@/components/auth/sign-out-button";
+import { requirePageSession } from "@/lib/rbac";
+
+export const instant = false;
+
 const appNav = [
   { href: "/dashboard", label: "Dashboard" },
   { href: "/library", label: "Library" },
@@ -8,11 +13,13 @@ const appNav = [
   { href: "/settings/profile", label: "Settings" },
 ] as const;
 
-export default function AppShellLayout({
+export default async function AppShellLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const session = await requirePageSession("/dashboard");
+
   return (
     <div className="flex min-h-full flex-1">
       <aside className="border-border bg-surface hidden w-56 shrink-0 border-r md:block">
@@ -32,12 +39,19 @@ export default function AppShellLayout({
             </Link>
           ))}
         </nav>
+        <div className="border-border border-t p-3">
+          <p className="text-muted-foreground mb-2 truncate px-2 text-xs">
+            {session.user.email}
+          </p>
+          <SignOutButton />
+        </div>
       </aside>
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="border-border flex h-14 items-center border-b px-4 md:hidden">
+        <header className="border-border flex h-14 items-center justify-between border-b px-4 md:hidden">
           <Link href="/" className="font-semibold tracking-tight">
             Vaultforge
           </Link>
+          <SignOutButton />
         </header>
         <main className="flex-1 p-4 sm:p-6">{children}</main>
       </div>
