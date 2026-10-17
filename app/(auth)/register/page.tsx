@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 
-import { Button } from "@/components/ui/button";
+import { RegisterForm } from "@/components/auth/register-form";
 import {
   Card,
   CardContent,
@@ -20,19 +19,11 @@ export default function RegisterPage() {
       <CardHeader>
         <CardTitle>Create your vault</CardTitle>
         <CardDescription>
-          Registration arrives with Auth.js in Phase 6.
+          Track games, unlock achievements, and climb the leaderboard.
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <Button className="w-full" disabled>
-          Create account (coming soon)
-        </Button>
-        <p className="text-muted-foreground text-center text-sm">
-          Already have an account?{" "}
-          <Link href="/login" className="text-primary hover:underline">
-            Log in
-          </Link>
-        </p>
+      <CardContent>
+        <RegisterForm />
       </CardContent>
     </Card>
   );
