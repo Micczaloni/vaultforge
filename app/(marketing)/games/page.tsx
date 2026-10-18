@@ -2,43 +2,84 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { connection } from "next/server";
 
+import { DiscoveryFilters } from "@/components/games/discovery-filters";
 import { GameCard } from "@/components/games/game-card";
 import { EmptyState } from "@/components/shared/empty-state";
 import { PageHeader } from "@/components/shared/page-header";
+import { Pagination } from "@/components/shared/pagination";
 import { Button } from "@/components/ui/button";
 import { getGameCatalog } from "@/lib/games/catalog";
 import type { CatalogGame } from "@/lib/games/catalog/types";
+import { getTaxonomyOptions } from "@/lib/games/taxonomy";
 
 export const metadata: Metadata = {
   title: "Discover games",
-  description: "Browse and search the Vaultforge game catalog.",
+  description: "Browse, filter, and search the Vaultforge game catalog.",
 };
+
+function buildHref(params: Record<string, string | undefined>, page: number) {
+  const query = new URLSearchParams();
+  for (const [key, value] of Object.entries(params)) {
+    if (value) {
+      query.set(key, value);
+    }
+  }
+  query.set("page", String(page));
+  return `/games?${query.toString()}`;
+}
 
 export default async function GamesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; page?: string }>;
+  searchParams: Promise<{
+    q?: string;
+    page?: string;
+    genre?: string;
+    platform?: string;
+    sort?: string;
+    order?: string;
+  }>;
 }) {
   await connection();
   const params = await searchParams;
   const q = params.q?.trim() ?? "";
+  const genre = params.genre?.trim() ?? "";
+  const platform = params.platform?.trim() ?? "";
+  const sort = params.sort ?? "rating";
+  const order = params.order === "asc" ? "asc" : "desc";
   const page = Number(params.page ?? "1") || 1;
+  const pageSize = 20;
+
+  const taxonomy = await getTaxonomyOptions();
 
   let items: CatalogGame[] = [];
+  let total = 0;
+
   try {
     const catalog = getGameCatalog();
     const result = q
-      ? await catalog.search(q, { page, pageSize: 20 })
+      ? await catalog.search(q, { page, pageSize })
       : await catalog.list({
           page,
-          pageSize: 20,
-          sort: "rating",
-          order: "desc",
+          pageSize,
+          genre: genre || undefined,
+          platform: platform || undefined,
+          sort: sort as "title" | "releaseDate" | "rating",
+          order,
         });
     items = result.items;
+    total = result.total;
   } catch (error) {
     console.error("Discover catalog unavailable:", error);
   }
+
+  const filterParams = {
+    q: q || undefined,
+    genre: genre || undefined,
+    platform: platform || undefined,
+    sort,
+    order,
+  };
 
   return (
     <div className="mx-auto max-w-6xl space-y-8 px-4 py-12 sm:px-6">
@@ -51,50 +92,54 @@ export default async function GamesPage({
         }
       />
 
-      <form className="flex flex-col gap-3 sm:flex-row" action="/games">
-        <label className="sr-only" htmlFor="game-search">
-          Search games
-        </label>
-        <input
-          id="game-search"
-          name="q"
-          defaultValue={q}
-          placeholder="Search titles…"
-          className="border-input bg-background focus-visible:ring-ring/40 h-10 w-full rounded-md border px-3 text-sm outline-none focus-visible:ring-2"
-        />
-        <Button type="submit">Search</Button>
-      </form>
+      <DiscoveryFilters
+        q={q}
+        genre={genre}
+        platform={platform}
+        sort={sort}
+        order={order}
+        genres={taxonomy.genres}
+        platforms={taxonomy.platforms}
+      />
 
       {items.length === 0 ? (
         <EmptyState
           title="No games found"
           description={
-            q
-              ? `Nothing matched “${q}”. Try another query or seed the database.`
+            q || genre || platform
+              ? "Nothing matched these filters. Try clearing them or seeding the database."
               : "Seed the database or configure RAWG_API_KEY to populate discovery."
           }
           action={
             <Button variant="outline" asChild>
-              <Link href="/games">Clear search</Link>
+              <Link href="/games">Reset filters</Link>
             </Button>
           }
         />
       ) : (
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-          {items.map((game) => (
-            <GameCard
-              key={game.externalId}
-              slug={game.slug}
-              title={game.title}
-              coverUrl={game.coverUrl}
-              meta={
-                game.rating != null
-                  ? `★ ${game.rating.toFixed(1)}`
-                  : (game.releaseDate ?? undefined)
-              }
-            />
-          ))}
-        </div>
+        <>
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+            {items.map((game) => (
+              <GameCard
+                key={game.externalId}
+                slug={game.slug}
+                title={game.title}
+                coverUrl={game.coverUrl}
+                meta={
+                  game.rating != null
+                    ? `★ ${game.rating.toFixed(1)}`
+                    : (game.releaseDate ?? undefined)
+                }
+              />
+            ))}
+          </div>
+          <Pagination
+            page={page}
+            pageSize={pageSize}
+            total={total}
+            hrefForPage={(nextPage) => buildHref(filterParams, nextPage)}
+          />
+        </>
       )}
     </div>
   );
