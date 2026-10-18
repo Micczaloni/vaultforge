@@ -86,9 +86,38 @@ export class LocalGameCatalog implements GameCatalogService {
     const pageSize = opts.pageSize ?? 20;
     const order = opts.order ?? "desc";
 
+    const where = {
+      ...(opts.genre
+        ? {
+            genres: {
+              some: {
+                genre: {
+                  name: { equals: opts.genre, mode: "insensitive" as const },
+                },
+              },
+            },
+          }
+        : {}),
+      ...(opts.platform
+        ? {
+            platforms: {
+              some: {
+                platform: {
+                  name: {
+                    equals: opts.platform,
+                    mode: "insensitive" as const,
+                  },
+                },
+              },
+            },
+          }
+        : {}),
+    };
+
     const [total, games] = await Promise.all([
-      prisma.game.count(),
+      prisma.game.count({ where }),
       prisma.game.findMany({
+        where,
         include: {
           genres: { include: { genre: true } },
           platforms: { include: { platform: true } },
