@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 
+import { evaluateAchievementsForUser } from "@/lib/achievements/engine";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db/prisma";
 import { logLibraryActivity } from "@/lib/library/activity";
@@ -64,11 +65,14 @@ export async function addToLibraryAction(
         status: parsed.data.status,
       },
     });
+
+    await evaluateAchievementsForUser(session.user.id);
   } catch {
     return { error: "Game is already in your library." };
   }
 
   revalidatePath("/library");
+  revalidatePath("/achievements");
   revalidatePath(`/games/${game.slug}`);
   revalidatePath("/dashboard");
   return { success: "Added to library." };
@@ -130,9 +134,12 @@ export async function updateLibraryAction(
     });
   }
 
+  await evaluateAchievementsForUser(session.user.id);
+
   revalidatePath("/library");
   revalidatePath("/library/wishlist");
   revalidatePath("/library/backlog");
+  revalidatePath("/achievements");
   revalidatePath(`/games/${existing.game.slug}`);
   return { success: "Library updated." };
 }
@@ -168,8 +175,11 @@ export async function removeFromLibraryAction(formData: FormData) {
     },
   });
 
+  await evaluateAchievementsForUser(session.user.id);
+
   revalidatePath("/library");
   revalidatePath("/library/wishlist");
   revalidatePath("/library/backlog");
+  revalidatePath("/achievements");
   revalidatePath(`/games/${existing.game.slug}`);
 }
