@@ -1,10 +1,19 @@
 import { getGameCatalog } from "@/lib/games/catalog";
 import { syncCatalogGame } from "@/lib/games/sync";
+import { rateLimit } from "@/lib/api/rate-limit";
 import { jsonError, jsonOk } from "@/lib/api/response";
 import { gameSearchSchema } from "@/lib/validations/games";
 
 export async function GET(request: Request) {
   try {
+    const ip = request.headers.get("x-forwarded-for") ?? "local";
+    const limited = rateLimit(`search:${ip}`, 40, 60_000);
+    if (!limited.ok) {
+      return jsonError(429, "RATE_LIMITED", "Too many search requests", {
+        retryAfterSec: limited.retryAfterSec,
+      });
+    }
+
     const { searchParams } = new URL(request.url);
     const parsed = gameSearchSchema.safeParse({
       q: searchParams.get("q") ?? undefined,

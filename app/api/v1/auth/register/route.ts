@@ -1,11 +1,20 @@
 import { hash } from "bcryptjs";
 
 import { prisma } from "@/lib/db/prisma";
+import { rateLimit } from "@/lib/api/rate-limit";
 import { jsonError, jsonOk } from "@/lib/api/response";
 import { registerSchema } from "@/lib/validations/auth";
 
 export async function POST(request: Request) {
   try {
+    const ip = request.headers.get("x-forwarded-for") ?? "local";
+    const limited = rateLimit(`register:${ip}`, 10, 60_000);
+    if (!limited.ok) {
+      return jsonError(429, "RATE_LIMITED", "Too many registration attempts", {
+        retryAfterSec: limited.retryAfterSec,
+      });
+    }
+
     const body = await request.json();
     const parsed = registerSchema.safeParse(body);
 
