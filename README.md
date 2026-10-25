@@ -2,71 +2,82 @@
 
 **Your games. Your record. Your forge.**
 
-Vaultforge is a portfolio-grade gaming platform: personal game tracker, discovery (via RAWG behind a service layer), platform achievements, activity feed, leaderboard, and admin RBAC.
+Vaultforge is a portfolio-grade gaming platform: personal game tracker, discovery (RAWG behind a service layer), platform achievements, activity feed, XP leaderboard, profiles, and admin RBAC.
 
-This repository is implemented in phases. See [`ARCHITECTURE.md`](./ARCHITECTURE.md) and [`docs/openapi.yaml`](./docs/openapi.yaml).
+Architecture details: [`ARCHITECTURE.md`](./ARCHITECTURE.md) · OpenAPI: [`docs/openapi.yaml`](./docs/openapi.yaml)
 
 ## Stack
 
 - Next.js App Router · React · TypeScript · Tailwind CSS · shadcn/ui · Radix
-- Zustand (UI only) · TanStack Query · React Hook Form · Zod
-- PostgreSQL · Prisma · Auth.js · REST `/api/v1` · OpenAPI
-- Jest · Testing Library · Cypress · Docker · GitHub Actions · Vercel · Neon · Sentry
+- Zustand (UI only) · TanStack Query (ready) · React Hook Form · Zod
+- PostgreSQL · Prisma · Auth.js (credentials + optional GitHub)
+- REST `/api/v1` · Jest · Testing Library · Docker · GitHub Actions
 
-## Getting started (Phase 2)
+## Quick start
 
 ```bash
 npm install
+cp .env.example .env
+# fill AUTH_SECRET (required), DATABASE_URL, optional RAWG_API_KEY / GitHub OAuth
+
+docker compose up -d db
+npx prisma migrate deploy
+npm run db:seed
 npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000).
 
-### Scripts
+### Demo accounts (after seed)
 
-| Script                 | Purpose                    |
-| ---------------------- | -------------------------- |
-| `npm run dev`          | Next.js development server |
-| `npm run build`        | Production build           |
-| `npm run lint`         | ESLint                     |
-| `npm run typecheck`    | TypeScript check           |
-| `npm run format`       | Prettier write             |
-| `npm run format:check` | Prettier check             |
+Password for all seeded users: `Password123!`
 
-Husky + lint-staged run ESLint and Prettier on staged files before commit.
+| Email                | Username   | Role  |
+| -------------------- | ---------- | ----- |
+| admin@vaultforge.dev | forgeadmin | ADMIN |
+| aria@vaultforge.dev  | aria       | USER  |
 
-### Environment
+## Scripts
 
-Copy `.env.example` to `.env` (local only — never commit secrets).
+| Script                                         | Purpose       |
+| ---------------------------------------------- | ------------- |
+| `npm run dev`                                  | Dev server    |
+| `npm run build` / `start`                      | Production    |
+| `npm run lint` / `typecheck` / `test`          | Quality gates |
+| `npm run db:migrate` / `db:seed` / `db:studio` | Database      |
 
-### Database (Phase 4)
+## Product surfaces
 
-Requires Docker Desktop for local Postgres:
+- Public: landing, Discover (`/games`), game details, leaderboard, profiles `/u/[username]`
+- Auth: register / login (credentials; GitHub when env configured)
+- App: dashboard, library (+ wishlist/backlog), achievements, activity, settings
+- Admin: stats, users, achievement CRUD (`ADMIN` only)
+
+## Architecture highlights
+
+- **Catalog adapter:** `GameCatalogService` → `RawgGameCatalog` or `LocalGameCatalog`
+- **Auth/RBAC:** Auth.js JWT sessions, middleware + server helpers, IDOR checks on library
+- **Achievements:** criteria engine evaluates after library mutations and awards XP
+- **Security:** Zod validation, rate limits on search/register, security headers, env secrets only
+
+## Docker
 
 ```bash
-docker compose up -d db
-npm run db:migrate
-npm run db:seed
+docker compose up -d db     # database only (recommended while developing)
+# or full stack:
+docker compose up --build
 ```
 
-Seeded demo password for all users: `Password123!`  
-Admin: `admin@vaultforge.dev` / username `forgeadmin`
+## CI/CD
 
-## Design
+GitHub Actions runs on push/PR: install → prisma generate → lint → typecheck → test → build.
 
-**Obsidian Terminal** — dark charcoal surfaces, steel-blue primary (`#3B82F6`), restrained cyan accent, Outfit + JetBrains Mono via `next/font`.
+## Deployment (when ready)
 
-## Route groups
-
-- `(marketing)` — landing, games, leaderboard, legal
-- `(auth)` — login / register
-- `(app)` — dashboard, library, achievements, activity, settings
-- `admin` — ADMIN-only shell (enforcement in Phase 6/13)
-
-## Documentation
-
-- Architecture: [`ARCHITECTURE.md`](./ARCHITECTURE.md)
-- OpenAPI outline: [`docs/openapi.yaml`](./docs/openapi.yaml)
+- App: Vercel
+- DB: Neon PostgreSQL
+- Set `DATABASE_URL`, `AUTH_SECRET`, `NEXT_PUBLIC_APP_URL`, optional `RAWG_API_KEY`, `AUTH_GITHUB_*`, `SENTRY_DSN`
+- Run migrations against production (`prisma migrate deploy`)
 
 ## License
 
