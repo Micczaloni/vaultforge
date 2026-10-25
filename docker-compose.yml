@@ -17,5 +17,19 @@ services:
       timeout: 5s
       retries: 10
 
+  app:
+    build: .
+    container_name: vaultforge-app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/vaultforge?schema=public
+      AUTH_SECRET: local-compose-secret-change-me
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+    depends_on:
+      db:
+        condition: service_healthy
+
 volumes:
   vaultforge_pg:
