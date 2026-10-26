@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -31,12 +31,12 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  accounts         Account[]
-  sessions         Session[]
-  profile          Profile?
-  library          UserGame[]
-  achievements     UserAchievement[]
-  activities       Activity[]
+  accounts     Account[]
+  sessions     Session[]
+  profile      Profile?
+  library      UserGame[]
+  achievements UserAchievement[]
+  activities   Activity[]
 }
 
 model Account {
@@ -45,12 +45,12 @@ model Account {
   type              String
   provider          String
   providerAccountId String
-  refresh_token     String? @db.Text
-  access_token      String? @db.Text
+  refresh_token     String?
+  access_token      String?
   expires_at        Int?
   token_type        String?
   scope             String?
-  id_token          String? @db.Text
+  id_token          String?
   session_state     String?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -79,7 +79,7 @@ model Profile {
   userId      String   @unique
   username    String   @unique
   displayName String?
-  bio         String?  @db.VarChar(500)
+  bio         String?
   avatarUrl   String?
   isPublic    Boolean  @default(true)
   xp          Int      @default(0)
@@ -94,7 +94,7 @@ model Game {
   externalId  String    @unique
   slug        String    @unique
   title       String
-  description String?   @db.Text
+  description String?
   coverUrl    String?
   releaseDate DateTime?
   rating      Float?
@@ -147,7 +147,7 @@ model UserGame {
   gameId          String
   status          LibraryStatus
   rating          Int?
-  notes           String?       @db.VarChar(2000)
+  notes           String?
   favorited       Boolean       @default(false)
   statusChangedAt DateTime      @default(now())
   createdAt       DateTime      @default(now())

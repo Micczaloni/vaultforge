@@ -1,6 +1,8 @@
 import { hash } from "bcryptjs";
 import { LibraryStatus, PrismaClient, Role } from "@prisma/client";
 
+import { demoCoverUrl } from "../lib/games/covers";
+
 const prisma = new PrismaClient();
 
 function slugify(value: string) {
@@ -361,12 +363,14 @@ async function main() {
 
   const gameRecords = [];
   for (const game of games) {
+    const slug = slugify(game.title);
     const created = await prisma.game.create({
       data: {
         title: game.title,
-        slug: slugify(game.title),
+        slug,
         externalId: game.externalId,
         rating: game.rating,
+        coverUrl: demoCoverUrl(slug),
         releaseDate: new Date(`${game.year}-01-01`),
         description: `${game.title} is part of the Vaultforge demo catalog.`,
         genres: {

@@ -66,7 +66,6 @@ export async function syncCatalogGame(game: CatalogGame) {
     await prisma.gameGenre.deleteMany({ where: { gameId: record.id } });
     await prisma.gameGenre.createMany({
       data: genreIds.map((genreId) => ({ gameId: record.id, genreId })),
-      skipDuplicates: true,
     });
   }
 
@@ -78,7 +77,6 @@ export async function syncCatalogGame(game: CatalogGame) {
         gameId: record.id,
         platformId,
       })),
-      skipDuplicates: true,
     });
   }
 

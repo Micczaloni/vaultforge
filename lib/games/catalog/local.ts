@@ -33,9 +33,14 @@ function toCatalogGame(game: {
   };
 }
 
+const includeTaxonomy = {
+  genres: { include: { genre: true } },
+  platforms: { include: { platform: true } },
+} as const;
+
 /**
- * Fallback catalog when RAWG_API_KEY is missing — reads the local Game cache.
- * Keeps development usable offline after seeding.
+ * Local Game table catalog (used when RAWG_API_KEY is missing).
+ * SQLite-friendly filters (no case-insensitive mode).
  */
 export class LocalGameCatalog implements GameCatalogService {
   async search(
@@ -44,39 +49,28 @@ export class LocalGameCatalog implements GameCatalogService {
   ): Promise<PagedCatalog<CatalogGame>> {
     const page = opts.page ?? 1;
     const pageSize = opts.pageSize ?? 20;
-    const where = {
-      title: { contains: query, mode: "insensitive" as const },
-    };
+    const normalized = query.trim().toLowerCase();
 
-    const [total, games] = await Promise.all([
-      prisma.game.count({ where }),
-      prisma.game.findMany({
-        where,
-        include: {
-          genres: { include: { genre: true } },
-          platforms: { include: { platform: true } },
-        },
-        orderBy: { title: "asc" },
-        skip: (page - 1) * pageSize,
-        take: pageSize,
-      }),
-    ]);
+    const games = await prisma.game.findMany({
+      include: includeTaxonomy,
+      orderBy: { title: "asc" },
+    });
 
-    return {
-      items: games.map(toCatalogGame),
-      page,
-      pageSize,
-      total,
-    };
+    const filtered = games.filter((game) =>
+      game.title.toLowerCase().includes(normalized),
+    );
+    const total = filtered.length;
+    const items = filtered
+      .slice((page - 1) * pageSize, page * pageSize)
+      .map(toCatalogGame);
+
+    return { items, page, pageSize, total };
   }
 
   async getByExternalId(id: string): Promise<CatalogGame | null> {
     const game = await prisma.game.findUnique({
       where: { externalId: id },
-      include: {
-        genres: { include: { genre: true } },
-        platforms: { include: { platform: true } },
-      },
+      include: includeTaxonomy,
     });
     return game ? toCatalogGame(game) : null;
   }
@@ -86,58 +80,34 @@ export class LocalGameCatalog implements GameCatalogService {
     const pageSize = opts.pageSize ?? 20;
     const order = opts.order ?? "desc";
 
-    const where = {
-      ...(opts.genre
-        ? {
-            genres: {
-              some: {
-                genre: {
-                  name: { equals: opts.genre, mode: "insensitive" as const },
-                },
-              },
-            },
-          }
-        : {}),
-      ...(opts.platform
-        ? {
-            platforms: {
-              some: {
-                platform: {
-                  name: {
-                    equals: opts.platform,
-                    mode: "insensitive" as const,
-                  },
-                },
-              },
-            },
-          }
-        : {}),
-    };
+    const games = await prisma.game.findMany({
+      include: includeTaxonomy,
+      orderBy:
+        opts.sort === "title"
+          ? { title: order }
+          : opts.sort === "releaseDate"
+            ? { releaseDate: order }
+            : { rating: order },
+    });
 
-    const [total, games] = await Promise.all([
-      prisma.game.count({ where }),
-      prisma.game.findMany({
-        where,
-        include: {
-          genres: { include: { genre: true } },
-          platforms: { include: { platform: true } },
-        },
-        orderBy:
-          opts.sort === "title"
-            ? { title: order }
-            : opts.sort === "releaseDate"
-              ? { releaseDate: order }
-              : { rating: order },
-        skip: (page - 1) * pageSize,
-        take: pageSize,
-      }),
-    ]);
+    const genre = opts.genre?.toLowerCase();
+    const platform = opts.platform?.toLowerCase();
 
-    return {
-      items: games.map(toCatalogGame),
-      page,
-      pageSize,
-      total,
-    };
+    const filtered = games.filter((game) => {
+      const genreOk = genre
+        ? game.genres.some((g) => g.genre.name.toLowerCase() === genre)
+        : true;
+      const platformOk = platform
+        ? game.platforms.some((p) => p.platform.name.toLowerCase() === platform)
+        : true;
+      return genreOk && platformOk;
+    });
+
+    const total = filtered.length;
+    const items = filtered
+      .slice((page - 1) * pageSize, page * pageSize)
+      .map(toCatalogGame);
+
+    return { items, page, pageSize, total };
   }
 }
