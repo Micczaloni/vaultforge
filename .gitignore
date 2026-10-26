@@ -48,3 +48,9 @@ next-env.d.ts
 .claude/
 .devin/
 .cursor/skills/
+
+# local SQLite databases
+prisma/*.db
+prisma/*.db-journal
+*.db
+*.db-journal
