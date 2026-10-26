@@ -13,20 +13,30 @@ Architecture details: [`ARCHITECTURE.md`](./ARCHITECTURE.md) · OpenAPI: [`docs/
 - PostgreSQL · Prisma · Auth.js (credentials + optional GitHub)
 - REST `/api/v1` · Jest · Testing Library · Docker · GitHub Actions
 
-## Quick start
+## Quick start (no Docker required)
 
 ```bash
 npm install
 cp .env.example .env
-# fill AUTH_SECRET (required), DATABASE_URL, optional RAWG_API_KEY / GitHub OAuth
+# default DATABASE_URL is SQLite: file:./dev.db
 
-docker compose up -d db
-npx prisma migrate deploy
+npx prisma migrate dev
 npm run db:seed
 npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000).
+
+### How to log in
+
+1. Open `/login`
+2. Use a seeded account:
+   - `admin@vaultforge.dev` / `Password123!` (ADMIN)
+   - `aria@vaultforge.dev` / `Password123!` (USER)
+3. After login you land on `/dashboard`
+
+> Local database is **SQLite** so the app works without installing Docker/Postgres.
+> Docker Compose remains available later for Postgres parity if you want it.
 
 ### Demo accounts (after seed)
 

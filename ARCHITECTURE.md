@@ -33,7 +33,8 @@ Vaultforge demonstrates production-style frontend/full-stack engineering:
                                GitHub Actions CI
 ```
 
-**Deploy:** Vercel (app) + Neon (PostgreSQL) + Sentry (errors).
+**Local DB:** SQLite (`file:./dev.db`) so the app runs without Docker.  
+**Deploy:** Vercel (app) + Neon/Postgres in production + Sentry (errors).
 
 ---
 

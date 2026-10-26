@@ -1,22 +1,6 @@
+# Optional: run the Next.js app in Docker with SQLite (matches local default).
+# For day-to-day development, prefer: npm run dev
 services:
-  db:
-    image: postgres:16-alpine
-    container_name: vaultforge-db
-    restart: unless-stopped
-    ports:
-      - "5432:5432"
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: vaultforge
-    volumes:
-      - vaultforge_pg:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d vaultforge"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
-
   app:
     build: .
     container_name: vaultforge-app
@@ -24,12 +8,11 @@ services:
     ports:
       - "3000:3000"
     environment:
-      DATABASE_URL: postgresql://postgres:postgres@db:5432/vaultforge?schema=public
+      DATABASE_URL: file:./dev.db
       AUTH_SECRET: local-compose-secret-change-me
       NEXT_PUBLIC_APP_URL: http://localhost:3000
-    depends_on:
-      db:
-        condition: service_healthy
+    volumes:
+      - vaultforge_data:/app/prisma
 
 volumes:
-  vaultforge_pg:
+  vaultforge_data:
