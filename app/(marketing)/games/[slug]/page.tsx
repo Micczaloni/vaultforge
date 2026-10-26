@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db/prisma";
+import { demoCoverUrl } from "@/lib/games/covers";
 
 type PageProps = {
   params: Promise<{ slug: string }>;
@@ -74,20 +75,14 @@ export default async function GameDetailsPage({ params }: PageProps) {
     <div className="mx-auto max-w-5xl space-y-8 px-4 py-12 sm:px-6">
       <div className="grid gap-8 md:grid-cols-[220px_1fr]">
         <div className="border-border bg-surface-elevated relative aspect-[3/4] overflow-hidden rounded-[10px] border">
-          {game.coverUrl ? (
-            <Image
-              src={game.coverUrl}
-              alt=""
-              fill
-              className="object-cover"
-              sizes="220px"
-              priority
-            />
-          ) : (
-            <div className="text-muted-foreground flex h-full items-center justify-center font-mono text-xs">
-              No cover
-            </div>
-          )}
+          <Image
+            src={game.coverUrl || demoCoverUrl(game.slug)}
+            alt=""
+            fill
+            className="object-cover"
+            sizes="220px"
+            priority
+          />
         </div>
 
         <div className="space-y-6">

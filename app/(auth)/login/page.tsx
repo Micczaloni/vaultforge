@@ -39,6 +39,11 @@ export default async function LoginPage({
             Account created. You can log in now.
           </p>
         ) : null}
+        <div className="border-border bg-surface text-muted-foreground rounded-md border px-3 py-2 text-xs">
+          <p className="text-foreground font-medium">Seeded demo accounts</p>
+          <p className="mt-1 font-mono">admin@vaultforge.dev / Password123!</p>
+          <p className="font-mono">aria@vaultforge.dev / Password123!</p>
+        </div>
         <LoginForm
           callbackUrl={params.callbackUrl ?? "/dashboard"}
           githubEnabled={githubEnabled}
