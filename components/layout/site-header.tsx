@@ -10,12 +10,12 @@ const navItems = [
 
 export function SiteHeader() {
   return (
-    <header className="border-border bg-background/80 border-b backdrop-blur-md">
+    <header className="border-border/70 bg-background/70 sticky top-0 z-40 border-b backdrop-blur-xl">
       <div className="mx-auto flex h-14 w-full max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
         <div className="flex items-center gap-8">
           <Link
             href="/"
-            className="text-foreground hover:text-primary font-semibold tracking-tight transition-colors"
+            className="text-foreground hover:text-accent font-semibold tracking-tight transition-colors"
           >
             Vaultforge
           </Link>
