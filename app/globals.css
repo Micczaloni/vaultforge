@@ -1,32 +1,34 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-/* Vaultforge — Obsidian Terminal design tokens */
+/* Vaultforge — Obsidian Terminal */
 :root {
-  --background: #0b0d10;
+  --background: #07090c;
   --foreground: #e8ecf1;
-  --card: #12151a;
+  --card: #10141a;
   --card-foreground: #e8ecf1;
-  --popover: #181c23;
+  --popover: #151a22;
   --popover-foreground: #e8ecf1;
   --primary: #3b82f6;
   --primary-foreground: #f8fafc;
-  --secondary: #181c23;
+  --secondary: #151a22;
   --secondary-foreground: #e8ecf1;
-  --muted: #181c23;
-  --muted-foreground: #9aa3b2;
+  --muted: #151a22;
+  --muted-foreground: #8b95a8;
   --accent: #22d3ee;
-  --accent-foreground: #0b0d10;
+  --accent-foreground: #07090c;
   --destructive: #f87171;
-  --destructive-foreground: #0b0d10;
+  --destructive-foreground: #07090c;
   --success: #34d399;
   --warning: #fbbf24;
-  --border: #2a303a;
-  --input: #2a303a;
+  --border: #252c38;
+  --input: #252c38;
   --ring: #3b82f6;
-  --surface: #12151a;
-  --surface-elevated: #181c23;
+  --surface: #10141a;
+  --surface-elevated: #151a22;
   --radius: 0.625rem;
+  --forge-blue: #3b82f6;
+  --forge-cyan: #22d3ee;
 }
 
 @theme inline {
@@ -72,6 +74,14 @@
 
   body {
     @apply bg-background text-foreground min-h-full font-sans antialiased;
+    background-image:
+      radial-gradient(
+        ellipse 80% 50% at 50% -20%,
+        rgba(59, 130, 246, 0.12),
+        transparent
+      ),
+      linear-gradient(180deg, #07090c 0%, #0a0d12 100%);
+    background-attachment: fixed;
   }
 
   :focus-visible {
@@ -87,5 +97,42 @@
       transition-duration: 0.01ms !important;
       scroll-behavior: auto !important;
     }
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .forge-grid {
+    background-image:
+      linear-gradient(rgba(36, 44, 56, 0.35) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(36, 44, 56, 0.35) 1px, transparent 1px);
+    background-size: 48px 48px;
+    mask-image: radial-gradient(ellipse at center, black 20%, transparent 75%);
+  }
+
+  .animate-rise {
+    animation: rise 0.8s ease-out both;
+  }
+
+  .animate-rise-delay {
+    animation: rise 0.9s ease-out 0.12s both;
+  }
+
+  .animate-rise-delay-2 {
+    animation: rise 1s ease-out 0.22s both;
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
