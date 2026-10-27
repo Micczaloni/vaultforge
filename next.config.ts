@@ -12,12 +12,22 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
-        hostname: "images.unsplash.com",
+        hostname: "cdn.cloudflare.steamstatic.com",
+        pathname: "/steam/apps/**",
+      },
+      {
+        protocol: "https",
+        hostname: "shared.cloudflare.steamstatic.com",
         pathname: "/**",
       },
       {
         protocol: "https",
-        hostname: "placehold.co",
+        hostname: "cdn.akamai.steamstatic.com",
+        pathname: "/steam/apps/**",
+      },
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com",
         pathname: "/**",
       },
     ],

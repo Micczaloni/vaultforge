@@ -1,7 +1,7 @@
 import { hash } from "bcryptjs";
 import { LibraryStatus, PrismaClient, Role } from "@prisma/client";
 
-import { demoCoverUrl } from "../lib/games/covers";
+import { demoCoverUrl, steamLibraryCover } from "../lib/games/covers";
 
 const prisma = new PrismaClient();
 
@@ -25,10 +25,19 @@ const genres = [
 
 const platforms = ["PC", "PlayStation 5", "Xbox Series X|S", "Nintendo Switch"];
 
-const games = [
+const games: Array<{
+  title: string;
+  externalId: string;
+  steamAppId?: number;
+  rating: number;
+  year: number;
+  genres: string[];
+  platforms: string[];
+}> = [
   {
     title: "Hollow Knight",
-    externalId: "rawg-320",
+    externalId: "steam-367520",
+    steamAppId: 367520,
     rating: 4.6,
     year: 2017,
     genres: ["Action", "Indie", "Platformer"],
@@ -36,7 +45,8 @@ const games = [
   },
   {
     title: "Hades",
-    externalId: "rawg-2744",
+    externalId: "steam-1145360",
+    steamAppId: 1145360,
     rating: 4.7,
     year: 2020,
     genres: ["Action", "Indie", "RPG"],
@@ -44,7 +54,8 @@ const games = [
   },
   {
     title: "Celeste",
-    externalId: "rawg-2574",
+    externalId: "steam-504230",
+    steamAppId: 504230,
     rating: 4.5,
     year: 2018,
     genres: ["Platformer", "Indie"],
@@ -52,7 +63,8 @@ const games = [
   },
   {
     title: "The Witcher 3: Wild Hunt",
-    externalId: "rawg-3328",
+    externalId: "steam-292030",
+    steamAppId: 292030,
     rating: 4.7,
     year: 2015,
     genres: ["RPG", "Adventure"],
@@ -60,7 +72,8 @@ const games = [
   },
   {
     title: "Elden Ring",
-    externalId: "rawg-326243",
+    externalId: "steam-1245620",
+    steamAppId: 1245620,
     rating: 4.6,
     year: 2022,
     genres: ["RPG", "Action"],
@@ -68,7 +81,8 @@ const games = [
   },
   {
     title: "Stardew Valley",
-    externalId: "rawg-654",
+    externalId: "steam-413150",
+    steamAppId: 413150,
     rating: 4.6,
     year: 2016,
     genres: ["Indie", "RPG"],
@@ -76,7 +90,8 @@ const games = [
   },
   {
     title: "Disco Elysium",
-    externalId: "rawg-28199",
+    externalId: "steam-632470",
+    steamAppId: 632470,
     rating: 4.5,
     year: 2019,
     genres: ["RPG", "Adventure"],
@@ -84,7 +99,8 @@ const games = [
   },
   {
     title: "Dead Cells",
-    externalId: "rawg-28026",
+    externalId: "steam-588650",
+    steamAppId: 588650,
     rating: 4.3,
     year: 2018,
     genres: ["Action", "Indie", "Platformer"],
@@ -92,7 +108,8 @@ const games = [
   },
   {
     title: "Slay the Spire",
-    externalId: "rawg-58616",
+    externalId: "steam-646570",
+    steamAppId: 646570,
     rating: 4.5,
     year: 2019,
     genres: ["Strategy", "Indie"],
@@ -100,7 +117,8 @@ const games = [
   },
   {
     title: "Ori and the Will of the Wisps",
-    externalId: "rawg-28199-ori",
+    externalId: "steam-1057090",
+    steamAppId: 1057090,
     rating: 4.5,
     year: 2020,
     genres: ["Platformer", "Adventure"],
@@ -108,7 +126,8 @@ const games = [
   },
   {
     title: "Portal 2",
-    externalId: "rawg-4200",
+    externalId: "steam-620",
+    steamAppId: 620,
     rating: 4.6,
     year: 2011,
     genres: ["Puzzle", "Shooter"],
@@ -116,7 +135,8 @@ const games = [
   },
   {
     title: "Doom Eternal",
-    externalId: "rawg-58746",
+    externalId: "steam-782330",
+    steamAppId: 782330,
     rating: 4.4,
     year: 2020,
     genres: ["Shooter", "Action"],
@@ -124,7 +144,8 @@ const games = [
   },
   {
     title: "Baldur's Gate 3",
-    externalId: "rawg-3387",
+    externalId: "steam-1086940",
+    steamAppId: 1086940,
     rating: 4.8,
     year: 2023,
     genres: ["RPG", "Adventure"],
@@ -132,7 +153,8 @@ const games = [
   },
   {
     title: "Monster Hunter: World",
-    externalId: "rawg-362",
+    externalId: "steam-582010",
+    steamAppId: 582010,
     rating: 4.2,
     year: 2018,
     genres: ["Action", "RPG"],
@@ -140,7 +162,8 @@ const games = [
   },
   {
     title: "Cuphead",
-    externalId: "rawg-28026-cup",
+    externalId: "steam-268910",
+    steamAppId: 268910,
     rating: 4.3,
     year: 2017,
     genres: ["Platformer", "Indie"],
@@ -148,7 +171,8 @@ const games = [
   },
   {
     title: "Factorio",
-    externalId: "rawg-278",
+    externalId: "steam-427520",
+    steamAppId: 427520,
     rating: 4.6,
     year: 2020,
     genres: ["Strategy", "Indie"],
@@ -156,7 +180,8 @@ const games = [
   },
   {
     title: "Divinity: Original Sin 2",
-    externalId: "rawg-3017",
+    externalId: "steam-435150",
+    steamAppId: 435150,
     rating: 4.6,
     year: 2017,
     genres: ["RPG", "Strategy"],
@@ -164,7 +189,8 @@ const games = [
   },
   {
     title: "Sekiro: Shadows Die Twice",
-    externalId: "rawg-50734",
+    externalId: "steam-814380",
+    steamAppId: 814380,
     rating: 4.5,
     year: 2019,
     genres: ["Action", "Adventure"],
@@ -172,7 +198,8 @@ const games = [
   },
   {
     title: "Undertale",
-    externalId: "rawg-1985",
+    externalId: "steam-391540",
+    steamAppId: 391540,
     rating: 4.4,
     year: 2015,
     genres: ["Indie", "RPG"],
@@ -180,7 +207,8 @@ const games = [
   },
   {
     title: "Outer Wilds",
-    externalId: "rawg-27476",
+    externalId: "steam-753640",
+    steamAppId: 753640,
     rating: 4.5,
     year: 2019,
     genres: ["Adventure", "Indie"],
@@ -188,7 +216,8 @@ const games = [
   },
   {
     title: "Return of the Obra Dinn",
-    externalId: "rawg-58617",
+    externalId: "steam-653530",
+    steamAppId: 653530,
     rating: 4.4,
     year: 2018,
     genres: ["Puzzle", "Indie"],
@@ -196,7 +225,8 @@ const games = [
   },
   {
     title: "Deep Rock Galactic",
-    externalId: "rawg-28026-drg",
+    externalId: "steam-548430",
+    steamAppId: 548430,
     rating: 4.4,
     year: 2020,
     genres: ["Shooter", "Action"],
@@ -204,7 +234,7 @@ const games = [
   },
   {
     title: "Metroid Dread",
-    externalId: "rawg-62296",
+    externalId: "nintendo-metroid-dread",
     rating: 4.5,
     year: 2021,
     genres: ["Action", "Platformer"],
@@ -212,7 +242,8 @@ const games = [
   },
   {
     title: "It Takes Two",
-    externalId: "rawg-455597",
+    externalId: "steam-1426210",
+    steamAppId: 1426210,
     rating: 4.4,
     year: 2021,
     genres: ["Adventure", "Platformer"],
@@ -220,7 +251,8 @@ const games = [
   },
   {
     title: "Control",
-    externalId: "rawg-265221",
+    externalId: "steam-870780",
+    steamAppId: 870780,
     rating: 4.2,
     year: 2019,
     genres: ["Action", "Adventure", "Shooter"],
@@ -228,7 +260,8 @@ const games = [
   },
   {
     title: "Inscryption",
-    externalId: "rawg-622492",
+    externalId: "steam-1092790",
+    steamAppId: 1092790,
     rating: 4.4,
     year: 2021,
     genres: ["Strategy", "Indie"],
@@ -236,7 +269,8 @@ const games = [
   },
   {
     title: "Tunic",
-    externalId: "rawg-326242",
+    externalId: "steam-553420",
+    steamAppId: 553420,
     rating: 4.3,
     year: 2022,
     genres: ["Adventure", "Indie"],
@@ -244,7 +278,8 @@ const games = [
   },
   {
     title: "Vampire Survivors",
-    externalId: "rawg-781742",
+    externalId: "steam-1794680",
+    steamAppId: 1794680,
     rating: 4.3,
     year: 2022,
     genres: ["Action", "Indie"],
@@ -252,7 +287,8 @@ const games = [
   },
   {
     title: "Animal Well",
-    externalId: "rawg-962216",
+    externalId: "steam-2183900",
+    steamAppId: 2183900,
     rating: 4.4,
     year: 2024,
     genres: ["Adventure", "Indie", "Puzzle"],
@@ -260,7 +296,8 @@ const games = [
   },
   {
     title: "Balatro",
-    externalId: "rawg-962217",
+    externalId: "steam-2379780",
+    steamAppId: 2379780,
     rating: 4.6,
     year: 2024,
     genres: ["Strategy", "Indie"],
@@ -268,7 +305,8 @@ const games = [
   },
   {
     title: "Dave the Diver",
-    externalId: "rawg-850791",
+    externalId: "steam-1868140",
+    steamAppId: 1868140,
     rating: 4.4,
     year: 2023,
     genres: ["Adventure", "Indie"],
@@ -276,7 +314,8 @@ const games = [
   },
   {
     title: "Persona 5 Royal",
-    externalId: "rawg-326244",
+    externalId: "steam-1687950",
+    steamAppId: 1687950,
     rating: 4.7,
     year: 2020,
     genres: ["RPG"],
@@ -370,7 +409,9 @@ async function main() {
         slug,
         externalId: game.externalId,
         rating: game.rating,
-        coverUrl: demoCoverUrl(slug),
+        coverUrl: game.steamAppId
+          ? steamLibraryCover(game.steamAppId)
+          : demoCoverUrl(slug),
         releaseDate: new Date(`${game.year}-01-01`),
         description: `${game.title} is part of the Vaultforge demo catalog.`,
         genres: {
