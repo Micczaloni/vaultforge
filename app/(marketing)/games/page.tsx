@@ -85,11 +85,7 @@ export default async function GamesPage({
     <div className="mx-auto max-w-6xl space-y-8 px-4 py-12 sm:px-6">
       <PageHeader
         title="Discover"
-        description={
-          process.env.RAWG_API_KEY
-            ? "Live catalog via RAWG (cached locally for your library)."
-            : "Showing the local catalog cache. Add RAWG_API_KEY for live discovery."
-        }
+        description="Curated local catalog with Steam store art. Filter by genre, platform, and rating."
       />
 
       <DiscoveryFilters
