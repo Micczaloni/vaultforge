@@ -5,7 +5,6 @@ import { notFound } from "next/navigation";
 import { connection } from "next/server";
 
 import { LibraryAddForm } from "@/components/library/library-add-form";
-import { PageHeader } from "@/components/shared/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { auth } from "@/lib/auth";
@@ -60,6 +59,8 @@ export default async function GameDetailsPage({ params }: PageProps) {
     notFound();
   }
 
+  const cover = game.coverUrl || demoCoverUrl(game.slug);
+
   const libraryEntry = session?.user?.id
     ? await prisma.userGame.findUnique({
         where: {
@@ -72,74 +73,103 @@ export default async function GameDetailsPage({ params }: PageProps) {
     : null;
 
   return (
-    <div className="mx-auto max-w-5xl space-y-8 px-4 py-12 sm:px-6">
-      <div className="grid gap-8 md:grid-cols-[220px_1fr]">
-        <div className="border-border bg-surface-elevated relative aspect-[3/4] overflow-hidden rounded-[10px] border">
-          <Image
-            src={game.coverUrl || demoCoverUrl(game.slug)}
-            alt=""
-            fill
-            className="object-cover"
-            sizes="220px"
-            priority
-          />
-        </div>
+    <div className="relative">
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-[420px] overflow-hidden">
+        <Image
+          src={cover}
+          alt=""
+          fill
+          className="scale-110 object-cover opacity-30 blur-2xl"
+          sizes="100vw"
+          priority
+        />
+        <div className="from-background via-background/80 to-background absolute inset-0 bg-gradient-to-b" />
+      </div>
 
-        <div className="space-y-6">
-          <PageHeader
-            title={game.title}
-            description={game.description ?? undefined}
-          />
-
-          <div className="flex flex-wrap gap-2">
-            {game.genres.map((item) => (
-              <Badge key={item.genreId} variant="secondary">
-                {item.genre.name}
-              </Badge>
-            ))}
-            {game.platforms.map((item) => (
-              <Badge key={item.platformId} variant="outline">
-                {item.platform.name}
-              </Badge>
-            ))}
+      <div className="relative mx-auto max-w-5xl space-y-10 px-4 py-12 sm:px-6">
+        <div className="grid items-start gap-8 md:grid-cols-[240px_1fr]">
+          <div className="border-border/80 bg-surface-elevated relative aspect-[3/4] overflow-hidden rounded-xl border shadow-[0_24px_60px_rgba(0,0,0,0.55)]">
+            <Image
+              src={cover}
+              alt=""
+              fill
+              className="object-cover"
+              sizes="240px"
+              priority
+            />
           </div>
 
-          <dl className="grid gap-4 font-mono text-sm sm:grid-cols-2">
-            <div>
-              <dt className="text-muted-foreground">Rating</dt>
-              <dd>{game.rating ?? "—"}</dd>
+          <div className="space-y-6 pt-1">
+            <div className="space-y-3">
+              <p className="text-accent font-mono text-xs tracking-[0.2em] uppercase">
+                Game detail
+              </p>
+              <h1 className="text-foreground text-3xl font-semibold tracking-tight sm:text-4xl">
+                {game.title}
+              </h1>
+              {game.description ? (
+                <p className="text-muted-foreground max-w-2xl text-base leading-relaxed">
+                  {game.description}
+                </p>
+              ) : null}
             </div>
-            <div>
-              <dt className="text-muted-foreground">Release</dt>
-              <dd>
-                {game.releaseDate
-                  ? game.releaseDate.toISOString().slice(0, 10)
-                  : "—"}
-              </dd>
-            </div>
-          </dl>
 
-          {session?.user ? (
-            <LibraryAddForm
-              gameId={game.id}
-              existing={
-                libraryEntry
-                  ? {
-                      id: libraryEntry.id,
-                      status: libraryEntry.status,
-                      favorited: libraryEntry.favorited,
-                      rating: libraryEntry.rating,
-                    }
-                  : null
-              }
-            />
-          ) : (
-            <Button asChild>
-              <Link href={`/login?callbackUrl=/games/${game.slug}`}>
-                Sign in to track this game
-              </Link>
-            </Button>
-          )}
+            <div className="flex flex-wrap gap-2">
+              {game.genres.map((item) => (
+                <Badge key={item.genreId} variant="secondary">
+                  {item.genre.name}
+                </Badge>
+              ))}
+              {game.platforms.map((item) => (
+                <Badge key={item.platformId} variant="outline">
+                  {item.platform.name}
+                </Badge>
+              ))}
+            </div>
+
+            <dl className="grid gap-4 font-mono text-sm sm:grid-cols-2">
+              <div className="border-border/60 bg-surface/50 rounded-lg border px-4 py-3">
+                <dt className="text-muted-foreground text-xs tracking-wide uppercase">
+                  Rating
+                </dt>
+                <dd className="text-accent mt-1 text-lg">
+                  {game.rating != null ? `★ ${game.rating.toFixed(1)}` : "—"}
+                </dd>
+              </div>
+              <div className="border-border/60 bg-surface/50 rounded-lg border px-4 py-3">
+                <dt className="text-muted-foreground text-xs tracking-wide uppercase">
+                  Release
+                </dt>
+                <dd className="mt-1 text-lg">
+                  {game.releaseDate
+                    ? game.releaseDate.toISOString().slice(0, 10)
+                    : "—"}
+                </dd>
+              </div>
+            </dl>
+
+            {session?.user ? (
+              <LibraryAddForm
+                gameId={game.id}
+                existing={
+                  libraryEntry
+                    ? {
+                        id: libraryEntry.id,
+                        status: libraryEntry.status,
+                        favorited: libraryEntry.favorited,
+                        rating: libraryEntry.rating,
+                      }
+                    : null
+                }
+              />
+            ) : (
+              <Button asChild>
+                <Link href={`/login?callbackUrl=/games/${game.slug}`}>
+                  Sign in to track this game
+                </Link>
+              </Button>
+            )}
+          </div>
         </div>
       </div>
     </div>

@@ -2,15 +2,15 @@
 
 **Your games. Your record. Your forge.**
 
-Vaultforge is a portfolio-grade gaming platform: personal game tracker, discovery (RAWG behind a service layer), platform achievements, activity feed, XP leaderboard, profiles, and admin RBAC.
+Vaultforge is a portfolio-grade gaming platform: personal game tracker, discovery catalog, platform achievements, activity feed, XP leaderboard, profiles, and admin RBAC. Seeded covers come from the **Steam CDN** (no API key). Optional live discovery via `RAWG_API_KEY` when that service is available.
 
 Architecture details: [`ARCHITECTURE.md`](./ARCHITECTURE.md) · OpenAPI: [`docs/openapi.yaml`](./docs/openapi.yaml)
 
 ## Stack
 
 - Next.js App Router · React · TypeScript · Tailwind CSS · shadcn/ui · Radix
-- Zustand (UI only) · TanStack Query (ready) · React Hook Form · Zod
-- PostgreSQL · Prisma · Auth.js (credentials + optional GitHub)
+- Three.js / React Three Fiber (landing hero) · Zustand (UI only) · React Hook Form · Zod
+- SQLite locally (Postgres-ready) · Prisma · Auth.js (credentials + optional GitHub)
 - REST `/api/v1` · Jest · Testing Library · Docker · GitHub Actions
 
 ## Quick start (no Docker required)
