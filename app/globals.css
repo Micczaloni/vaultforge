@@ -1,34 +1,32 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-/* Vaultforge — Obsidian Terminal */
+/* Vaultforge — vivid arcade night (not void black) */
 :root {
-  --background: #07090c;
-  --foreground: #e8ecf1;
-  --card: #10141a;
-  --card-foreground: #e8ecf1;
-  --popover: #151a22;
-  --popover-foreground: #e8ecf1;
-  --primary: #3b82f6;
-  --primary-foreground: #f8fafc;
-  --secondary: #151a22;
-  --secondary-foreground: #e8ecf1;
-  --muted: #151a22;
-  --muted-foreground: #8b95a8;
-  --accent: #22d3ee;
-  --accent-foreground: #07090c;
-  --destructive: #f87171;
-  --destructive-foreground: #07090c;
+  --background: #0b1430;
+  --foreground: #f2f6ff;
+  --card: #142044;
+  --card-foreground: #f2f6ff;
+  --popover: #18264f;
+  --popover-foreground: #f2f6ff;
+  --primary: #38bdf8;
+  --primary-foreground: #07101f;
+  --secondary: #1a2a55;
+  --secondary-foreground: #f2f6ff;
+  --muted: #1a2a55;
+  --muted-foreground: #b7c4e0;
+  --accent: #f472b6;
+  --accent-foreground: #07101f;
+  --destructive: #fb7185;
+  --destructive-foreground: #07101f;
   --success: #34d399;
   --warning: #fbbf24;
-  --border: #252c38;
-  --input: #252c38;
-  --ring: #3b82f6;
-  --surface: #10141a;
-  --surface-elevated: #151a22;
+  --border: #2a3d6d;
+  --input: #2a3d6d;
+  --ring: #38bdf8;
+  --surface: #142044;
+  --surface-elevated: #1a2a55;
   --radius: 0.625rem;
-  --forge-blue: #3b82f6;
-  --forge-cyan: #22d3ee;
 }
 
 @theme inline {
@@ -76,11 +74,16 @@
     @apply bg-background text-foreground min-h-full font-sans antialiased;
     background-image:
       radial-gradient(
-        ellipse 80% 50% at 50% -20%,
-        rgba(59, 130, 246, 0.12),
+        ellipse 70% 45% at 15% -10%,
+        rgba(56, 189, 248, 0.22),
         transparent
       ),
-      linear-gradient(180deg, #07090c 0%, #0a0d12 100%);
+      radial-gradient(
+        ellipse 55% 40% at 90% 0%,
+        rgba(244, 114, 182, 0.16),
+        transparent
+      ),
+      linear-gradient(180deg, #0b1430 0%, #12204a 55%, #0f1a38 100%);
     background-attachment: fixed;
   }
 
@@ -105,14 +108,6 @@
     text-wrap: balance;
   }
 
-  .forge-grid {
-    background-image:
-      linear-gradient(rgba(36, 44, 56, 0.35) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(36, 44, 56, 0.35) 1px, transparent 1px);
-    background-size: 48px 48px;
-    mask-image: radial-gradient(ellipse at center, black 20%, transparent 75%);
-  }
-
   .animate-rise {
     animation: rise 0.8s ease-out both;
   }
@@ -124,6 +119,10 @@
   .animate-rise-delay-2 {
     animation: rise 1s ease-out 0.22s both;
   }
+
+  .animate-hero-drift {
+    animation: hero-drift 22s ease-in-out infinite alternate;
+  }
 }
 
 @keyframes rise {
@@ -134,5 +133,14 @@
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes hero-drift {
+  from {
+    transform: scale(1.05) translate3d(0, 0, 0);
+  }
+  to {
+    transform: scale(1.12) translate3d(-2%, -1.5%, 0);
   }
 }
