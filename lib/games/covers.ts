@@ -14,6 +14,16 @@ export function steamCapsuleCover(appId: number | string) {
   return `https://cdn.cloudflare.steamstatic.com/steam/apps/${appId}/capsule_616x353.jpg`;
 }
 
+/** Wide cinematic key art — same vibe as RAWG landing backgrounds. */
+export function steamLibraryHero(appId: number | string) {
+  return `https://cdn.cloudflare.steamstatic.com/steam/apps/${appId}/library_hero.jpg`;
+}
+
+export function steamAppIdFromCoverUrl(url: string | null | undefined) {
+  const match = url?.match(/\/steam\/apps\/(\d+)\//);
+  return match?.[1] ?? null;
+}
+
 /** Fallback atmospheric art when a title has no Steam AppID (e.g. console exclusives). */
 const FALLBACK_COVERS = [
   "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=600&h=800&q=80",

@@ -9,9 +9,10 @@ Architecture details: [`ARCHITECTURE.md`](./ARCHITECTURE.md) · OpenAPI: [`docs/
 ## Stack
 
 - Next.js App Router · React · TypeScript · Tailwind CSS · shadcn/ui · Radix
-- Three.js / React Three Fiber (landing hero) · Zustand (UI only) · React Hook Form · Zod
+- Zustand (UI only) · React Hook Form · Zod
 - SQLite locally (Postgres-ready) · Prisma · Auth.js (credentials + optional GitHub)
 - REST `/api/v1` · Jest · Testing Library · Docker · GitHub Actions
+- Steam CDN game art (covers + cinematic `library_hero` landing backdrop)
 
 ## Quick start (no Docker required)
 
