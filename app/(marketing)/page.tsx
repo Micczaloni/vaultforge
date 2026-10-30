@@ -1,8 +1,12 @@
-import Image from "next/image";
 import Link from "next/link";
 import { connection } from "next/server";
 
-import { HeroBackdrop } from "@/components/marketing/hero-backdrop";
+import { CoverMarquee } from "@/components/marketing/cover-marquee";
+import { DragonHero } from "@/components/marketing/dragon-hero";
+import {
+  FeaturedCarousel,
+  type FeaturedSlide,
+} from "@/components/marketing/featured-carousel";
 import { Button } from "@/components/ui/button";
 import {
   demoCoverUrl,
@@ -13,94 +17,83 @@ import { prisma } from "@/lib/db/prisma";
 
 export const instant = false;
 
-const FALLBACK_HERO_APP_ID = "1086940"; // Baldur's Gate 3 — vivid key art
+const HERO = {
+  slug: "baldurs-gate-3",
+  title: "Baldur's Gate 3",
+  backdrop: "/hero/bg3-hero.jpg",
+  cutout: "/hero/bg3-dragon.png",
+  logo: "/hero/bg3-logo.png",
+};
 
 export default async function LandingPage() {
   await connection();
 
-  let featured: Array<{
+  let games: Array<{
     slug: string;
     title: string;
     coverUrl: string | null;
     rating: number | null;
+    genres: { genre: { name: string } }[];
   }> = [];
 
   try {
-    featured = await prisma.game.findMany({
+    games = await prisma.game.findMany({
       orderBy: { rating: "desc" },
-      take: 10,
-      select: { slug: true, title: true, coverUrl: true, rating: true },
+      take: 24,
+      select: {
+        slug: true,
+        title: true,
+        coverUrl: true,
+        rating: true,
+        genres: { select: { genre: { select: { name: true } } } },
+      },
     });
   } catch {
-    featured = [];
+    games = [];
   }
 
-  const heroGame = featured[0];
-  const heroAppId =
-    steamAppIdFromCoverUrl(heroGame?.coverUrl) ?? FALLBACK_HERO_APP_ID;
-  const heroSrc = steamLibraryHero(heroAppId);
+  const heroGame = games.find((g) => g.slug === HERO.slug);
+
+  const slides: FeaturedSlide[] = games.slice(0, 8).map((g) => {
+    const appId = steamAppIdFromCoverUrl(g.coverUrl);
+    const coverSrc = g.coverUrl || demoCoverUrl(g.slug);
+    return {
+      slug: g.slug,
+      title: g.title,
+      coverSrc,
+      wideSrc: appId ? steamLibraryHero(appId) : coverSrc,
+      rating: g.rating,
+      genres: g.genres.map((x) => x.genre.name),
+    };
+  });
+
+  const marqueeA = games.slice(0, 12).map((g) => ({
+    slug: g.slug,
+    title: g.title,
+    coverSrc: g.coverUrl || demoCoverUrl(g.slug),
+  }));
+  const marqueeB = games.slice(12, 24).map((g) => ({
+    slug: g.slug,
+    title: g.title,
+    coverSrc: g.coverUrl || demoCoverUrl(g.slug),
+  }));
 
   return (
     <div className="relative">
-      <section className="relative isolate min-h-[calc(100vh-3.5rem)] overflow-hidden">
-        <HeroBackdrop
-          src={heroSrc}
-          alt={heroGame ? `${heroGame.title} key art` : "Featured game art"}
-        />
+      <DragonHero
+        backdropSrc={HERO.backdrop}
+        cutoutSrc={HERO.cutout}
+        logoSrc={HERO.logo}
+        gameTitle={heroGame?.title ?? HERO.title}
+        gameHref={`/games/${HERO.slug}`}
+        rating={heroGame?.rating ?? null}
+      />
 
-        <div className="relative mx-auto flex min-h-[calc(100vh-3.5rem)] w-full max-w-6xl flex-col justify-center px-4 py-16 sm:px-6">
-          <div className="max-w-xl space-y-8">
-            <p className="animate-rise font-mono text-xs tracking-[0.28em] text-cyan-300 uppercase drop-shadow">
-              Vaultforge
-            </p>
-            <div className="animate-rise-delay space-y-4">
-              <h1 className="text-5xl leading-[0.95] font-semibold tracking-tight text-white drop-shadow-[0_4px_24px_rgba(0,0,0,0.55)] sm:text-6xl lg:text-7xl">
-                Your games.
-                <br />
-                Your record.
-                <br />
-                <span className="bg-gradient-to-r from-cyan-300 via-sky-300 to-fuchsia-300 bg-clip-text text-transparent">
-                  Your forge.
-                </span>
-              </h1>
-              <p className="max-w-md text-lg text-balance text-white/85 drop-shadow">
-                Track play status, discover titles, unlock achievements, and
-                climb the leaderboard — with real game art front and center.
-              </p>
-            </div>
-            <div className="animate-rise-delay-2 flex flex-wrap gap-3">
-              <Button
-                size="lg"
-                className="bg-white text-slate-900 hover:bg-cyan-100"
-                asChild
-              >
-                <Link href="/login">Enter the vault</Link>
-              </Button>
-              <Button
-                size="lg"
-                variant="outline"
-                className="border-white/40 bg-white/10 text-white backdrop-blur-sm hover:bg-white/20 hover:text-white"
-                asChild
-              >
-                <Link href="/games">Browse games</Link>
-              </Button>
-            </div>
-            {heroGame ? (
-              <p className="animate-rise-delay-2 font-mono text-xs text-white/65">
-                Backdrop · {heroGame.title}
-                {heroGame.rating != null
-                  ? ` · ★ ${heroGame.rating.toFixed(1)}`
-                  : ""}
-              </p>
-            ) : null}
-          </div>
-        </div>
-      </section>
-
-      <section className="relative border-t border-white/10 bg-gradient-to-b from-[#0b1430] via-[#12204a] to-[#0f1a38] py-16">
+      {/* Featured carousel */}
+      <section className="relative py-16">
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_20%_0%,rgba(34,211,238,0.18),transparent_45%),radial-gradient(ellipse_at_90%_20%,rgba(244,114,182,0.16),transparent_40%)]"
+          className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_15%_0%,rgba(34,211,238,0.18),transparent_45%),radial-gradient(ellipse_at_90%_30%,rgba(251,146,60,0.14),transparent_40%)]"
         />
         <div className="relative mx-auto max-w-6xl space-y-8 px-4 sm:px-6">
           <div className="flex flex-wrap items-end justify-between gap-4">
@@ -121,49 +114,91 @@ export default async function LandingPage() {
             </Button>
           </div>
 
-          <div className="flex [scrollbar-width:none] gap-4 overflow-x-auto pb-2 [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-            {(featured.length > 0
-              ? featured
-              : Array.from({ length: 6 }).map((_, index) => ({
-                  slug: `demo-${index}`,
-                  title: "Coming soon",
-                  coverUrl: demoCoverUrl(`demo-${index}`),
-                  rating: null as number | null,
-                }))
-            ).map((game) => (
-              <Link
-                key={game.slug}
-                href={featured.length ? `/games/${game.slug}` : "/games"}
-                className="group relative aspect-[3/4] w-[140px] shrink-0 overflow-hidden rounded-xl ring-1 ring-white/15 transition-transform duration-300 hover:-translate-y-1 hover:ring-cyan-300/50 sm:w-[160px]"
-              >
-                <Image
-                  src={game.coverUrl || demoCoverUrl(game.slug)}
-                  alt=""
-                  fill
-                  className="object-cover transition-transform duration-500 group-hover:scale-105"
-                  sizes="160px"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#0b1430]/95 via-[#0b1430]/25 to-transparent" />
-                <div className="absolute inset-x-0 bottom-0 space-y-0.5 p-2.5">
-                  <p className="line-clamp-2 text-xs leading-snug font-semibold text-white">
-                    {game.title}
-                  </p>
-                  {game.rating != null ? (
-                    <p className="font-mono text-[10px] text-cyan-300">
-                      ★ {game.rating.toFixed(1)}
-                    </p>
-                  ) : null}
-                </div>
-              </Link>
-            ))}
-          </div>
-
-          <div className="rounded-xl border border-white/15 bg-white/10 px-4 py-3 text-sm backdrop-blur-md">
-            <p className="font-medium text-white">Demo login</p>
-            <p className="mt-1 font-mono text-xs text-white/75 sm:text-sm">
-              admin@vaultforge.dev · Password123! &nbsp;·&nbsp;
-              aria@vaultforge.dev · Password123!
+          {slides.length > 0 ? (
+            <FeaturedCarousel slides={slides} />
+          ) : (
+            <p className="text-white/70">
+              Seed the database to populate featured titles.
             </p>
+          )}
+        </div>
+      </section>
+
+      {/* Marquee shelf */}
+      {marqueeA.length > 0 ? (
+        <section className="relative space-y-3 py-10">
+          <div className="mx-auto mb-6 max-w-6xl px-4 sm:px-6">
+            <p className="font-mono text-xs tracking-[0.2em] text-orange-300 uppercase">
+              The catalog
+            </p>
+            <h2 className="mt-2 text-2xl font-semibold tracking-tight text-white sm:text-3xl">
+              {games.length}+ titles ready to track
+            </h2>
+          </div>
+          <CoverMarquee items={marqueeA} />
+          {marqueeB.length > 0 ? (
+            <CoverMarquee items={marqueeB} reverse />
+          ) : null}
+        </section>
+      ) : null}
+
+      {/* How it works + demo */}
+      <section className="relative py-16">
+        <div className="mx-auto grid max-w-6xl gap-6 px-4 sm:px-6 md:grid-cols-3">
+          {[
+            {
+              step: "01",
+              title: "Discover",
+              body: "Browse a curated catalog with real store art, filters, and search.",
+              tone: "from-cyan-400/25 to-sky-500/5",
+            },
+            {
+              step: "02",
+              title: "Track",
+              body: "Wishlist, backlog, playing, completed — your record, your pace.",
+              tone: "from-fuchsia-400/25 to-pink-500/5",
+            },
+            {
+              step: "03",
+              title: "Forge",
+              body: "Unlock achievements, earn XP, and climb the public leaderboard.",
+              tone: "from-orange-400/25 to-amber-500/5",
+            },
+          ].map((item) => (
+            <div
+              key={item.step}
+              className={`group relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br ${item.tone} p-6 backdrop-blur-sm transition-transform duration-300 hover:-translate-y-1`}
+            >
+              <p className="font-mono text-xs tracking-[0.25em] text-white/50">
+                {item.step}
+              </p>
+              <h3 className="mt-3 text-xl font-semibold text-white">
+                {item.title}
+              </h3>
+              <p className="mt-2 text-sm leading-relaxed text-white/75">
+                {item.body}
+              </p>
+            </div>
+          ))}
+        </div>
+
+        <div className="mx-auto mt-8 max-w-6xl px-4 sm:px-6">
+          <div className="flex flex-col gap-3 rounded-2xl border border-white/15 bg-white/10 px-5 py-4 text-sm backdrop-blur-md sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="font-medium text-white">
+                Try it with a demo account
+              </p>
+              <p className="mt-1 font-mono text-xs text-white/75 sm:text-sm">
+                admin@vaultforge.dev · Password123! &nbsp;·&nbsp;
+                aria@vaultforge.dev · Password123!
+              </p>
+            </div>
+            <Button
+              className="bg-white text-slate-900 hover:bg-cyan-100"
+              asChild
+            >
+              <Link href="/login">Log in</Link>
+            </Button>
           </div>
         </div>
       </section>
