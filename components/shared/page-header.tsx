@@ -1,6 +1,7 @@
 import { cn } from "@/lib/utils";
 
 type PageHeaderProps = {
+  eyebrow?: string;
   title: string;
   description?: string;
   actions?: React.ReactNode;
@@ -8,6 +9,7 @@ type PageHeaderProps = {
 };
 
 export function PageHeader({
+  eyebrow,
   title,
   description,
   actions,
@@ -20,8 +22,13 @@ export function PageHeader({
         className,
       )}
     >
-      <div className="space-y-1">
-        <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+      <div className="space-y-2">
+        {eyebrow ? (
+          <p className="font-mono text-xs tracking-[0.22em] text-cyan-300 uppercase">
+            {eyebrow}
+          </p>
+        ) : null}
+        <h1 className="text-3xl font-semibold tracking-tight text-white drop-shadow-[0_4px_18px_rgba(0,0,0,0.45)] sm:text-4xl">
           {title}
         </h1>
         {description ? (

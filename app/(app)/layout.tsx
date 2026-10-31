@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { SignOutButton } from "@/components/auth/sign-out-button";
+import { PageBackdrop } from "@/components/shared/page-backdrop";
 import { requirePageSession } from "@/lib/rbac";
 
 export const instant = false;
@@ -22,9 +23,12 @@ export default async function AppShellLayout({
 
   return (
     <div className="flex min-h-full flex-1">
-      <aside className="border-border bg-surface hidden w-56 shrink-0 border-r md:block">
-        <div className="border-border flex h-14 items-center border-b px-4">
-          <Link href="/" className="font-semibold tracking-tight">
+      <aside className="hidden w-56 shrink-0 border-r border-white/10 bg-gradient-to-b from-[#142044] via-[#10193a] to-[#0b1430] md:block">
+        <div className="flex h-14 items-center border-b border-white/10 px-4">
+          <Link
+            href="/"
+            className="font-semibold tracking-tight text-white hover:text-cyan-300"
+          >
             Vaultforge
           </Link>
         </div>
@@ -33,13 +37,13 @@ export default async function AppShellLayout({
             <Link
               key={item.href}
               href={item.href}
-              className="text-muted-foreground hover:bg-surface-elevated hover:text-foreground rounded-md px-3 py-2 text-sm transition-colors"
+              className="text-muted-foreground rounded-md px-3 py-2 text-sm transition-colors hover:bg-white/10 hover:text-white"
             >
               {item.label}
             </Link>
           ))}
         </nav>
-        <div className="border-border border-t p-3">
+        <div className="border-t border-white/10 p-3">
           <p className="text-muted-foreground mb-2 truncate px-2 text-xs">
             {session.user.email}
           </p>
@@ -53,7 +57,10 @@ export default async function AppShellLayout({
           </Link>
           <SignOutButton />
         </header>
-        <main className="flex-1 p-4 sm:p-6">{children}</main>
+        <main className="relative flex-1 p-4 sm:p-6">
+          <PageBackdrop height="h-[260px]" />
+          {children}
+        </main>
       </div>
     </div>
   );

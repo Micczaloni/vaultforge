@@ -55,6 +55,8 @@ export class RawgGameCatalog implements GameCatalogService {
       results: Parameters<typeof mapRawgGame>[0][];
     }>("/games", {
       search: query,
+      search_precise: "true",
+      exclude_additions: "true",
       page,
       page_size: pageSize,
     });
@@ -104,6 +106,10 @@ export class RawgGameCatalog implements GameCatalogService {
       genres: opts.genre,
       platforms: opts.platform,
       ordering,
+      // Keep the list "store quality": skip DLC/editions and obscure
+      // titles that top RAWG's raw rating sort with a handful of votes.
+      exclude_additions: "true",
+      metacritic: opts.sort === "rating" || !opts.sort ? "70,100" : undefined,
     });
 
     return {
