@@ -3,6 +3,7 @@ import Link from "next/link";
 import { connection } from "next/server";
 
 import { EmptyState } from "@/components/shared/empty-state";
+import { PageBackdrop } from "@/components/shared/page-backdrop";
 import { PageHeader } from "@/components/shared/page-header";
 import { Pagination } from "@/components/shared/pagination";
 import { prisma } from "@/lib/db/prisma";
@@ -58,8 +59,10 @@ export default async function LeaderboardPage({
   }
 
   return (
-    <div className="mx-auto max-w-3xl space-y-8 px-4 py-12 sm:px-6">
+    <div className="relative mx-auto max-w-3xl space-y-8 px-4 py-12 sm:px-6">
+      <PageBackdrop />
       <PageHeader
+        eyebrow="Rankings"
         title="Leaderboard"
         description="Public forges ranked by XP from achievements and play."
       />
@@ -75,11 +78,25 @@ export default async function LeaderboardPage({
             {rows.map((row) => (
               <li
                 key={row.username}
-                className="border-border bg-card flex items-center justify-between gap-3 rounded-[10px] border px-4 py-3"
+                className={`flex items-center justify-between gap-3 rounded-xl border px-4 py-3 backdrop-blur-sm transition-colors hover:bg-white/10 ${
+                  row.rank <= 3
+                    ? "border-cyan-300/40 bg-gradient-to-r from-cyan-400/15 via-white/5 to-orange-400/10"
+                    : "border-white/10 bg-white/5"
+                }`}
               >
                 <div className="flex items-center gap-3">
-                  <span className="text-muted-foreground w-8 font-mono text-sm">
-                    #{row.rank}
+                  <span
+                    className={`grid size-8 place-items-center rounded-full font-mono text-sm ${
+                      row.rank === 1
+                        ? "bg-amber-300 text-slate-900"
+                        : row.rank === 2
+                          ? "bg-slate-200 text-slate-900"
+                          : row.rank === 3
+                            ? "bg-orange-400 text-slate-900"
+                            : "text-muted-foreground bg-white/5"
+                    }`}
+                  >
+                    {row.rank}
                   </span>
                   <Link
                     href={`/u/${row.username}`}

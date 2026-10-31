@@ -5,6 +5,7 @@ import { connection } from "next/server";
 import { DiscoveryFilters } from "@/components/games/discovery-filters";
 import { GameCard } from "@/components/games/game-card";
 import { EmptyState } from "@/components/shared/empty-state";
+import { PageBackdrop } from "@/components/shared/page-backdrop";
 import { PageHeader } from "@/components/shared/page-header";
 import { Pagination } from "@/components/shared/pagination";
 import { Button } from "@/components/ui/button";
@@ -82,10 +83,16 @@ export default async function GamesPage({
   };
 
   return (
-    <div className="mx-auto max-w-6xl space-y-8 px-4 py-12 sm:px-6">
+    <div className="relative mx-auto max-w-6xl space-y-8 px-4 py-12 sm:px-6">
+      <PageBackdrop />
       <PageHeader
+        eyebrow="Catalog"
         title="Discover"
-        description="Curated local catalog with Steam store art. Filter by genre, platform, and rating."
+        description={
+          process.env.RAWG_API_KEY
+            ? "Live catalog powered by RAWG — half a million titles, filtered to store-quality releases."
+            : "Curated local catalog with Steam store art. Filter by genre, platform, and rating."
+        }
       />
 
       <DiscoveryFilters
