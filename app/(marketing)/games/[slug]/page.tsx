@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db/prisma";
 import { demoCoverUrl } from "@/lib/games/covers";
+import { resolveGameBySlug } from "@/lib/games/resolve";
 
 type PageProps = {
   params: Promise<{ slug: string }>;
@@ -47,13 +48,7 @@ export default async function GameDetailsPage({ params }: PageProps) {
   const { slug } = await params;
   const session = await auth();
 
-  const game = await prisma.game.findUnique({
-    where: { slug },
-    include: {
-      genres: { include: { genre: true } },
-      platforms: { include: { platform: true } },
-    },
-  });
+  const game = await resolveGameBySlug(slug);
 
   if (!game) {
     notFound();
