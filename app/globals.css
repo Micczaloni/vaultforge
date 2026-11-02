@@ -129,39 +129,162 @@
   }
 }
 
-/* ---------- Hero stage (scroll parallax driven by --sy) ---------- */
-.hero-stage {
+/* ---------- Cinematic 2.5D hero (parallax via --sy/--mx/--my) ---------- */
+.cine-hero {
   --sy: 0;
+  --mx: 0;
+  --my: 0;
 }
 
-.hero-layer-bg {
-  transform: translate3d(0, calc(var(--sy) * 12vh), 0) scale(1.08);
+.cine-bg {
+  transform: translate3d(
+      calc(var(--mx) * -18px),
+      calc(var(--my) * -12px + var(--sy) * 10vh),
+      0
+    )
+    scale(1.1);
   will-change: transform;
 }
 
-/* 3D canvas layer — right half of the hero, lifts toward the viewer on scroll */
-.hero-layer-dragon {
-  inset: 0;
-  transform: translate3d(calc(var(--sy) * -10vw), calc(var(--sy) * -22vh), 0)
-    scale(calc(1 + var(--sy) * 0.35));
-  transform-origin: 55% 50%;
+.cine-cloud-mid {
+  transform: translate3d(
+    calc(var(--mx) * -28px + var(--sy) * -4vw),
+    calc(var(--my) * -18px + var(--sy) * 6vh),
+    0
+  );
   will-change: transform;
 }
 
-.hero-layer-dragon canvas {
-  width: 100% !important;
-  height: 100% !important;
+.cine-cloud-drift-a {
+  animation: cloud-drift-a 28s ease-in-out infinite alternate;
+}
+
+.cine-dragon {
+  right: -4%;
+  top: 8%;
+  width: min(68vw, 980px);
+  aspect-ratio: 1600 / 1228;
+  z-index: 2;
+  transform: translate3d(
+      calc(var(--mx) * 42px + var(--sy) * -8vw),
+      calc(var(--my) * 28px + var(--sy) * -20vh),
+      0
+    )
+    scale(calc(1 + var(--sy) * 0.38));
+  transform-origin: 55% 45%;
+  will-change: transform;
+  filter: saturate(1.15) contrast(1.05);
+}
+
+.cine-dragon-float {
+  animation: dragon-sway 6.5s ease-in-out infinite;
+}
+
+.cine-fire {
+  left: 52%;
+  top: 18%;
+  width: 48%;
+  height: 42%;
+  z-index: 3;
+}
+
+.cine-fire-glow {
+  position: absolute;
+  left: 48%;
+  top: 12%;
+  width: 55%;
+  height: 48%;
+  background: radial-gradient(
+    ellipse at 20% 60%,
+    rgba(255, 160, 50, 0.55),
+    rgba(255, 80, 20, 0.18) 40%,
+    transparent 70%
+  );
+  filter: blur(16px);
+  mix-blend-mode: screen;
+  animation: fire-glow-pulse 4.2s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.cine-cloud-fg {
+  z-index: 4;
+  transform: translate3d(
+    calc(var(--mx) * 50px + var(--sy) * -10vw),
+    calc(var(--my) * 30px + var(--sy) * 4vh),
+    0
+  );
+  will-change: transform;
+}
+
+.cine-cloud-drift-b {
+  animation: cloud-drift-b 22s ease-in-out infinite alternate;
+}
+
+.cine-cloud-drift-c {
+  animation: cloud-drift-c 18s ease-in-out infinite alternate;
+}
+
+.cine-copy {
+  transform: translate3d(0, calc(var(--sy) * 9vh), 0);
+  opacity: calc(1 - var(--sy) * 1.55);
 }
 
 @media (max-width: 768px) {
-  .hero-layer-dragon {
-    inset: 20% -10% -10% -10%;
+  .cine-dragon {
+    right: -28%;
+    top: 28%;
+    width: 130vw;
   }
 }
 
-.hero-copy {
-  transform: translate3d(0, calc(var(--sy) * 10vh), 0);
-  opacity: calc(1 - var(--sy) * 1.6);
+@keyframes cloud-drift-a {
+  from {
+    transform: translate3d(-2%, 0, 0);
+  }
+  to {
+    transform: translate3d(3%, -2%, 0);
+  }
+}
+
+@keyframes cloud-drift-b {
+  from {
+    transform: translate3d(2%, 1%, 0);
+  }
+  to {
+    transform: translate3d(-4%, -1%, 0);
+  }
+}
+
+@keyframes cloud-drift-c {
+  from {
+    transform: scale(1.3) translate3d(0, 0, 0);
+  }
+  to {
+    transform: scale(1.4) translate3d(-3%, 2%, 0);
+  }
+}
+
+@keyframes dragon-sway {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+  50% {
+    transform: translate3d(0, -12px, 0) rotate(-1deg);
+  }
+}
+
+@keyframes fire-glow-pulse {
+  0%,
+  12%,
+  55%,
+  100% {
+    opacity: 0.15;
+  }
+  22%,
+  38% {
+    opacity: 1;
+  }
 }
 
 @keyframes scroll-cue {

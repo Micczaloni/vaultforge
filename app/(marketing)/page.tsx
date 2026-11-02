@@ -21,6 +21,7 @@ const HERO = {
   slug: "baldurs-gate-3",
   title: "Baldur's Gate 3",
   backdrop: "/hero/bg3-hero.jpg",
+  dragon: "/hero/dragon-fg.png",
   logo: "/hero/bg3-logo.png",
 };
 
@@ -81,6 +82,7 @@ export default async function LandingPage() {
     <div className="relative">
       <DragonHero
         backdropSrc={HERO.backdrop}
+        dragonSrc={HERO.dragon}
         logoSrc={HERO.logo}
         gameTitle={heroGame?.title ?? HERO.title}
         gameHref={`/games/${HERO.slug}`}

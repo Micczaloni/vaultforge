@@ -32,8 +32,8 @@ export default function AboutPage() {
         description="A personal gaming vault with a light social layer: track your library, discover games, earn achievements, and compare progress."
       />
       <p className="text-muted-foreground text-xs">
-        Credits: game art via Steam CDN and RAWG; landing 3D model “Red Dragon”
-        by Tomek Zamojski (CC BY 3.0, via poly.pizza).
+        Credits: game art via Steam CDN and RAWG. Hero uses layered cinematic
+        key art with parallax cloud overlays.
       </p>
       <div className="grid gap-4 sm:grid-cols-3">
         {pillars.map((p) => (
