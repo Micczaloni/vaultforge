@@ -2,11 +2,15 @@ import Link from "next/link";
 import { connection } from "next/server";
 
 import { CoverMarquee } from "@/components/marketing/cover-marquee";
-import { DragonHero } from "@/components/marketing/dragon-hero";
+import {
+  CinematicHero,
+  type FloatProp,
+} from "@/components/marketing/cinematic-hero";
 import {
   FeaturedCarousel,
   type FeaturedSlide,
 } from "@/components/marketing/featured-carousel";
+import { TiltSpotlight } from "@/components/marketing/tilt-spotlight";
 import { Button } from "@/components/ui/button";
 import {
   demoCoverUrl,
@@ -67,6 +71,16 @@ export default async function LandingPage() {
     };
   });
 
+  const floatProps: FloatProp[] = games.slice(0, 4).map((g, i) => ({
+    src: g.coverUrl || demoCoverUrl(g.slug),
+    alt: g.title,
+    depth: [0.25, 0.55, 0.4, 0.75][i] ?? 0.5,
+    rotate: [-8, 6, -4, 10][i] ?? 0,
+    className: "",
+  }));
+
+  const spotlightSrc = slides[0]?.wideSrc ?? steamLibraryHero(1086940);
+
   const marqueeA = games.slice(0, 12).map((g) => ({
     slug: g.slug,
     title: g.title,
@@ -80,20 +94,35 @@ export default async function LandingPage() {
 
   return (
     <div className="relative">
-      <DragonHero
+      <CinematicHero
         backdropSrc={HERO.backdrop}
         dragonSrc={HERO.dragon}
+        floatProps={floatProps}
         logoSrc={HERO.logo}
         gameTitle={heroGame?.title ?? HERO.title}
         gameHref={`/games/${HERO.slug}`}
         rating={heroGame?.rating ?? null}
       />
 
+      {/* Ink-style tilted spotlight — one job, one panel */}
+      <section className="relative px-4 py-14 sm:px-6">
+        <div className="mx-auto max-w-6xl">
+          <TiltSpotlight
+            href="/games"
+            imageSrc={spotlightSrc}
+            eyebrow="Discover"
+            title="Defining your next play session"
+            body="Browse a curated vault of store-quality titles — filter, track, and forge your record."
+            cta="Explore the catalog"
+          />
+        </div>
+      </section>
+
       {/* Featured carousel */}
-      <section className="relative py-16">
+      <section className="relative py-12">
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_15%_0%,rgba(34,211,238,0.18),transparent_45%),radial-gradient(ellipse_at_90%_30%,rgba(251,146,60,0.14),transparent_40%)]"
+          className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_15%_0%,rgba(34,211,238,0.16),transparent_45%),radial-gradient(ellipse_at_90%_30%,rgba(251,146,60,0.12),transparent_40%)]"
         />
         <div className="relative mx-auto max-w-6xl space-y-8 px-4 sm:px-6">
           <div className="flex flex-wrap items-end justify-between gap-4">
@@ -124,7 +153,6 @@ export default async function LandingPage() {
         </div>
       </section>
 
-      {/* Marquee shelf */}
       {marqueeA.length > 0 ? (
         <section className="relative space-y-3 py-10">
           <div className="mx-auto mb-6 max-w-6xl px-4 sm:px-6">
@@ -142,7 +170,6 @@ export default async function LandingPage() {
         </section>
       ) : null}
 
-      {/* How it works + demo */}
       <section className="relative py-16">
         <div className="mx-auto grid max-w-6xl gap-6 px-4 sm:px-6 md:grid-cols-3">
           {[
